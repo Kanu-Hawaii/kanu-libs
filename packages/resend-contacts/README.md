@@ -83,3 +83,21 @@ degrades to "no key configured" rather than throwing at import time.
 | **kanu-pledge** | nothing. `pledges.mailing_opt_in` is written and never read | Needs a decision first: which segment, and whether the pre-ticked box stays. See `SKIPPED.md`, "Which ESP the mailing opt-in feeds today" |
 | **kanu-needs** | self-hosted list: Postgres `email_unsubscribes` + HMAC unsubscribe links, never touches `/contacts` | Nothing forced. Its model works and is not a Resend list. Only worth revisiting if the org wants one contact book |
 | **kanu-map** | no email at all | Nothing |
+
+## Consuming it as a submodule
+
+`exports` points at **TypeScript source**, not at a build. This is deliberate: `dist/` is gitignored,
+so a submodule checked out on Vercel would have no build output and the import would fail at deploy
+time rather than locally. Shipping source means there is nothing to build and nothing to forget.
+
+The cost is that a bundler has to compile it. Both consumers are Next, so:
+
+```ts
+// next.config.ts
+transpilePackages: ['@kanu/resend-contacts'],
+```
+
+On Deno, import the files directly (`@kanu/resend-contacts/src/client.ts`) or vendor them.
+
+`pnpm build` still emits `dist/` with declarations, for any future consumer that cannot compile TS.
+Nothing depends on it today.
