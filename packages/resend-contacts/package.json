@@ -1,0 +1,23 @@
+{
+  "name": "@kanu/resend-contacts",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Add a consenting person to Resend's contact book. No dependencies, runs on Node and Deno.",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./env": {
+      "types": "./dist/env.d.ts",
+      "default": "./dist/env.js"
+    },
+    "./src/*": "./src/*"
+  },
+  "files": ["dist", "src"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  }
+}
