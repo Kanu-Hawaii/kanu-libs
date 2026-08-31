@@ -24,7 +24,7 @@ import type {
   ContactSyncResult,
   ResendContactsConfig,
   UpsertContactInput,
-} from './types.ts'
+} from './types'
 
 const DEFAULT_ENDPOINT = 'https://api.resend.com/contacts'
 const DEFAULT_TIMEOUT_MS = 8000

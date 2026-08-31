@@ -8,10 +8,10 @@
  * callers use four ways. The contact book is the part that is genuinely the same.
  */
 
-export { upsertContact, splitName } from './client.ts'
+export { upsertContact, splitName } from './client'
 export type {
   ContactSyncOutcome,
   ContactSyncResult,
   ResendContactsConfig,
   UpsertContactInput,
-} from './types.ts'
+} from './types'

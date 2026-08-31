@@ -99,11 +99,19 @@ transpilePackages: ['@kanu/resend-contacts'],
 
 On Deno, import the files directly (`@kanu/resend-contacts/src/client.ts`) or vendor them.
 
-**Imports name `.ts` files explicitly**, which is not decoration. A first attempt used `.js`
-specifiers, the way an emitted ESM build would. `tsc` accepted that because it remaps `.js` to `.ts`,
-and so did every check short of a real build: Turbopack consuming raw source does not remap, and
-`next build` failed with `Can't resolve './client.js'` after the package had already been committed
-and called working. `.ts` is also what Deno requires.
+**Imports carry no file extension**, and it took two wrong answers to get there. `.js` specifiers,
+the way an emitted ESM build would write them, are what `tsc` accepts and what Turbopack rejects:
+`tsc` remaps `.js` to `.ts` and a bundler reading raw source does not, so `next build` failed with
+`Can't resolve './client.js'` after this package had been committed and called working. `.ts`
+specifiers fix that but require every consumer to enable `allowImportingTsExtensions`, which is a
+flag imposed on two Next apps to serve a Deno consumer that does not exist yet.
 
-There is therefore **no build step**. `pnpm typecheck` is the only compile, and `tsconfig` sets
-`allowImportingTsExtensions` with `noEmit`.
+Extensionless resolves in Turbopack and in a consumer's `tsc` under
+`moduleResolution: "bundler"`, with no consumer configuration at all.
+
+**The cost, stated honestly: Deno will not import these files as they stand.** Deno wants an explicit
+extension. Vendoring them, bundling them, or running with `--unstable-sloppy-imports` all work, and
+none of that is exercised today because kanu-needs is not a consumer. If it ever becomes one, this is
+the decision to revisit.
+
+There is **no build step**. `pnpm typecheck` is the only compile.

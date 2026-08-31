@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { splitName, upsertContact } from '../client.ts'
-import type { ResendContactsConfig } from '../types.ts'
+import { splitName, upsertContact } from '../client'
+import type { ResendContactsConfig } from '../types'
 
 const ok = (status = 201) =>
   vi.fn(async () => new Response(JSON.stringify({ id: 'c_1' }), { status }))
