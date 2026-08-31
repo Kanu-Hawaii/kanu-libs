@@ -43,6 +43,21 @@ callers use four ways. The contact book is the part that is genuinely the same e
 5. **The API key never appears in a returned status**, because those statuses get persisted and
    logged. There is a test for it.
 
+## Custom properties are opt-in, and that is not a style choice
+
+Resend rejects the **entire request** with `422 One or more properties do not exist` unless every
+custom property already exists on the account. So `properties` is sent only when `sourceProperty` is
+configured.
+
+This was found the hard way. kanu-web's original `resend-audience.ts` sent
+`properties: { source: 'donation form' }` unconditionally, which means it could never have created a
+contact even with a full-access key and a firing webhook. Nothing surfaced it, because the 422 was
+written into `audienceSyncStatus` on the donation record and nobody ever read that column.
+
+`source` remains required, because "which form did this person come through" is the first question
+asked when somebody complains about being on a list. It reaches the status string and the caller's
+logs; it only reaches Resend when a property exists to hold it.
+
 ## The open question: what does a repeat actually do?
 
 **Nobody at Kanu has established this, and Resend's create-contact documentation does not say.** It

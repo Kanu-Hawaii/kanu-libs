@@ -32,6 +32,22 @@ describe('consent', () => {
     expect(res.ok).toBe(true)
   })
 
+  it('sends NO properties object unless one is configured', async () => {
+    // Resend 422s the whole request when a custom property does not exist, so an
+    // unconfigured property loses the contact rather than degrading it.
+    const fetchMock = ok()
+    await upsertContact(person, config({ fetch: fetchMock }))
+    const body = JSON.parse(String(fetchMock.mock.calls[0]![1]!.body))
+    expect(body).not.toHaveProperty('properties')
+  })
+
+  it('sends properties only under the configured name', async () => {
+    const fetchMock = ok()
+    await upsertContact(person, config({ fetch: fetchMock, sourceProperty: 'signup_source' }))
+    const body = JSON.parse(String(fetchMock.mock.calls[0]![1]!.body))
+    expect(body.properties).toEqual({ signup_source: 'test' })
+  })
+
   it('marks the body as a subscribe rather than an unsubscribe', async () => {
     const fetchMock = ok()
     await upsertContact(person, config({ fetch: fetchMock }))

@@ -131,7 +131,22 @@ export const upsertContact = async (
               })),
             }
           : {}),
-        properties: { source: input.source },
+        /**
+         * `properties` is sent ONLY when a property name is configured, because
+         * Resend rejects the whole request with 422 "One or more properties do
+         * not exist" unless the custom property already exists on the account.
+         *
+         * This cost a real signup. kanu-web's original resend-audience.ts sent
+         * `properties: { source: 'donation form' }` unconditionally, so it could
+         * never have created a contact even with a working key and a firing
+         * webhook, and nothing surfaced that because the 422 was recorded into a
+         * status string on the donation and never read.
+         *
+         * `source` is still required and still useful: it goes into the status
+         * and the caller's logs, so "which form did this person come through"
+         * stays answerable without a Resend property.
+         */
+        ...(config.sourceProperty ? { properties: { [config.sourceProperty]: input.source } } : {}),
       }),
       signal: AbortSignal.timeout(config.timeoutMs ?? DEFAULT_TIMEOUT_MS),
     })

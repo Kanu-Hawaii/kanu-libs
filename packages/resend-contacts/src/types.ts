@@ -34,6 +34,16 @@ export interface ResendContactsConfig {
 
   /** Injectable for tests and for a future proxy. */
   readonly endpoint?: string
+
+  /**
+   * Name of a custom contact property to record `input.source` under.
+   *
+   * Left unset, no `properties` object is sent at all. That is the safe default:
+   * Resend 422s the entire request if the property does not already exist on the
+   * account, so an unconfigured property does not degrade the contact, it loses
+   * it. Create the property in Resend first, then set this.
+   */
+  readonly sourceProperty?: string
 }
 
 export interface UpsertContactInput {
