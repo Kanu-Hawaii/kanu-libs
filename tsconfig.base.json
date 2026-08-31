@@ -14,9 +14,7 @@
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
     "skipLibCheck": true,
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "noEmitOnError": true
+    "allowImportingTsExtensions": true,
+    "noEmit": true
   }
 }

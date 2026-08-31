@@ -11,7 +11,7 @@
  * config object yourself from `Deno.env.get(...)`.
  */
 
-import type { ResendContactsConfig } from './types.js'
+import type { ResendContactsConfig } from './types.ts'
 
 /** Reads one comma-separated env var into a list, tolerating stray whitespace. */
 /**

@@ -99,5 +99,11 @@ transpilePackages: ['@kanu/resend-contacts'],
 
 On Deno, import the files directly (`@kanu/resend-contacts/src/client.ts`) or vendor them.
 
-`pnpm build` still emits `dist/` with declarations, for any future consumer that cannot compile TS.
-Nothing depends on it today.
+**Imports name `.ts` files explicitly**, which is not decoration. A first attempt used `.js`
+specifiers, the way an emitted ESM build would. `tsc` accepted that because it remaps `.js` to `.ts`,
+and so did every check short of a real build: Turbopack consuming raw source does not remap, and
+`next build` failed with `Can't resolve './client.js'` after the package had already been committed
+and called working. `.ts` is also what Deno requires.
+
+There is therefore **no build step**. `pnpm typecheck` is the only compile, and `tsconfig` sets
+`allowImportingTsExtensions` with `noEmit`.

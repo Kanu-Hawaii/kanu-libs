@@ -2,12 +2,11 @@
   "name": "kanu-libs",
   "private": true,
   "type": "module",
-  "description": "Shared libraries for the Kanu Hawaiʻi apps",
+  "description": "Shared libraries for the Kanu Hawai\u02bbi apps",
   "engines": {
     "node": ">=20.9.0"
   },
   "scripts": {
-    "build": "pnpm -r build",
     "test": "vitest run",
     "typecheck": "pnpm -r typecheck",
     "check": "pnpm typecheck && pnpm test"

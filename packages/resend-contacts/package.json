@@ -9,9 +9,10 @@
     "./env": "./src/env.ts",
     "./src/*": "./src/*"
   },
-  "files": ["src"],
+  "files": [
+    "src"
+  ],
   "scripts": {
-    "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   }
 }
