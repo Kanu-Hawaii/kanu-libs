@@ -11,7 +11,7 @@
  * it.
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import {
   ACCEPT_ALL,
   needsDecision,
@@ -50,17 +50,55 @@ export function useCookieConsent(options: UseCookieConsentOptions = {}) {
   const store: ConsentStore = storeRef.current
 
   /**
-   * Deliberately null on the first render, on the server AND in the browser,
-   * rather than seeded from storage.
+   * The stored decision, read through useSyncExternalStore.
    *
-   * Four of the five consuming apps are server-rendered. A first client render
-   * that read the cookie would disagree with the HTML the server sent — the
-   * server has no cookie access here and would always say "no decision yet" —
-   * and React would either warn about the mismatch or, worse, keep the server's
-   * markup and show a banner to somebody who already answered. Reading in an
-   * effect makes both renders agree by construction.
+   * WHY NOT useState + useEffect. Four of the five consuming apps are
+   * server-rendered, so the first render must not read storage: the server has
+   * no cookie access and would always say "no decision yet", and a client
+   * render that disagreed would either warn or keep the server's markup and
+   * show a banner to somebody who already answered. The obvious fix is to read
+   * in an effect and setState, and that is what this did first — but it trips
+   * kanu-web's React Compiler lint for exactly the reason the rule exists: a
+   * synchronous setState in a mount effect is a second render pass on every
+   * page load.
+   *
+   * useSyncExternalStore is the primitive for this. `getServerSnapshot` returns
+   * null so server and first client render agree by construction, and React
+   * moves to the real value after hydration without a cascading render.
+   *
+   * The snapshot must be REFERENTIALLY STABLE or this loops forever, so the
+   * parsed record is cached against the raw string it came from.
    */
-  const [stored, setStored] = useState<StoredConsent | null>(null)
+  const [version, bump] = useState(0)
+  const cache = useRef<{ raw: string | null; parsed: StoredConsent | null } | null>(null)
+
+  const { subscribe, getSnapshot, getServerSnapshot } = useMemo(() => {
+    const listeners = new Set<() => void>()
+    return {
+      subscribe(listener: () => void) {
+        listeners.add(listener)
+        return () => listeners.delete(listener)
+      },
+      getSnapshot(): StoredConsent | null {
+        const raw = store.read()
+        if (!cache.current || cache.current.raw !== raw) {
+          cache.current = { raw, parsed: readConsent(store) }
+        }
+        return cache.current.parsed
+      },
+      getServerSnapshot(): StoredConsent | null {
+        return null
+      },
+      notify() {
+        for (const listener of listeners) listener()
+      },
+    }
+    // `version` is in the deps so a save rebuilds the reader and the snapshot is
+    // taken fresh rather than served from the previous cache entry.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [store, version])
+
+  const stored = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
   const [hydrated, setHydrated] = useState(false)
   const [dialogOpen, setDialogOpen] = useState(false)
 
@@ -72,23 +110,27 @@ export function useCookieConsent(options: UseCookieConsentOptions = {}) {
   const openPreferences = useCallback(() => setDialogOpen(true), [])
   const closePreferences = useCallback(() => setDialogOpen(false), [])
 
-  // Held in a ref so a caller passing an inline arrow does not re-run the
-  // mount effect on every render and start analytics repeatedly.
+  // Callbacks in refs so a caller passing an inline arrow does not re-run the
+  // mount effect and start analytics again. Written in an effect rather than
+  // during render, which the React Compiler lint forbids and which is unsafe
+  // under concurrent rendering anyway.
   const applyRef = useRef(onApply)
-  applyRef.current = onApply
   const withdrawRef = useRef(onWithdraw)
-  withdrawRef.current = onWithdraw
-
-  // Read the decision and start whatever it allows, once, after mount.
-  // A returning visitor should not have to accept again for analytics to run.
   useEffect(() => {
-    const existing = readConsent(store)
-    setStored(existing)
+    applyRef.current = onApply
+    withdrawRef.current = onWithdraw
+  })
+
+  // Whatever was already agreed to starts once, after hydration. A returning
+  // visitor should not have to accept again for analytics to run.
+  const appliedRef = useRef(false)
+  useEffect(() => {
     setHydrated(true)
+    if (appliedRef.current) return
+    appliedRef.current = true
+    const existing = readConsent(store)
     if (existing) applyRef.current?.(existing.preferences)
-    // Once, on mount. Later changes go through `save`.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [store])
 
   // `#cookie` opens the dialog, on first load and on any later hash change.
   useEffect(() => {
@@ -103,8 +145,9 @@ export function useCookieConsent(options: UseCookieConsentOptions = {}) {
   const save = useCallback(
     (next: ConsentPreferences) => {
       const hadAnalytics = stored?.preferences.analytics === true
-      const record = writeConsent(next, store)
-      setStored(record)
+      writeConsent(next, store)
+      // Invalidate the snapshot cache and re-read.
+      bump((n) => n + 1)
       setDialogOpen(false)
 
       if (next.analytics) applyRef.current?.(next)
