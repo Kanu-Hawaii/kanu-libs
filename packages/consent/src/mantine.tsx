@@ -21,7 +21,7 @@
  * pattern, and it is the one regulators name specifically.
  */
 
-import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
+import { useState, type CSSProperties, type ReactNode } from 'react'
 import { Anchor, Button, Group, Modal, Paper, Stack, Switch, Text } from '@mantine/core'
 import { CONSENT_COPY } from './copy'
 import { useCookieConsent, type UseCookieConsentOptions } from './react'
@@ -57,10 +57,16 @@ export function CookieConsent({
 
   // Local until saved, so toggling a switch and dismissing the dialog changes
   // nothing. Reset on each open so an abandoned edit does not persist.
+  //
+  // Adjusted DURING RENDER rather than in an effect. React documents this
+  // pattern for "reset state when a prop changes", and it avoids the second
+  // render pass an effect-plus-setState costs on every open.
   const [analytics, setAnalytics] = useState(preferences.analytics)
-  useEffect(() => {
+  const [wasOpen, setWasOpen] = useState(dialogOpen)
+  if (dialogOpen !== wasOpen) {
+    setWasOpen(dialogOpen)
     if (dialogOpen) setAnalytics(preferences.analytics)
-  }, [dialogOpen, preferences.analytics])
+  }
 
   return (
     <>

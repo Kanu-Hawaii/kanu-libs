@@ -70,10 +70,14 @@ export function useCookieConsent(options: UseCookieConsentOptions = {}) {
    * parsed record is cached against the raw string it came from.
    */
   const [version, bump] = useState(0)
-  const cache = useRef<{ raw: string | null; parsed: StoredConsent | null } | null>(null)
 
   const { subscribe, getSnapshot, getServerSnapshot } = useMemo(() => {
     const listeners = new Set<() => void>()
+    // Closed over rather than held in a ref: getSnapshot runs during render,
+    // and reading a ref there is forbidden by the React Compiler rules and
+    // unsafe under concurrent rendering. The memo is rebuilt whenever the store
+    // or the version changes, which is exactly when this should reset.
+    let cache: { raw: string | null; parsed: StoredConsent | null } | null = null
     return {
       subscribe(listener: () => void) {
         listeners.add(listener)
@@ -81,10 +85,10 @@ export function useCookieConsent(options: UseCookieConsentOptions = {}) {
       },
       getSnapshot(): StoredConsent | null {
         const raw = store.read()
-        if (!cache.current || cache.current.raw !== raw) {
-          cache.current = { raw, parsed: readConsent(store) }
+        if (!cache || cache.raw !== raw) {
+          cache = { raw, parsed: readConsent(store) }
         }
-        return cache.current.parsed
+        return cache.parsed
       },
       getServerSnapshot(): StoredConsent | null {
         return null
