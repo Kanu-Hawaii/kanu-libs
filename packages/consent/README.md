@@ -66,6 +66,26 @@ hash change, clearing the fragment afterwards. `#cookies` and
 `#cookie-preferences` work too. Point the footer link at `#cookie` so there is
 one path in rather than a link and a button that can drift.
 
+### Consumers must dedupe React
+
+This package arrives through the kanu-libs **submodule**, so it sits outside the
+consuming app's workspace and resolves its own imports from kanu-libs'
+`node_modules`. Without deduping, two things go wrong, and only the first is
+loud:
+
+1. The React entry point fails to resolve `react` at all, and the bundler says
+   so.
+2. Once it resolves, it loads *kanu-libs'* copy of React — a second instance,
+   which turns every hook in here into "invalid hook call" at runtime.
+
+Vite:
+
+```ts
+resolve: { dedupe: ['react', 'react-dom'] }
+```
+
+Next.js dedupes workspace React on its own; check it if a hook misbehaves.
+
 ### Withdrawal usually means a reload
 
 Most analytics cannot be unloaded once their script is in the document;
