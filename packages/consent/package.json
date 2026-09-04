@@ -7,16 +7,21 @@
   "exports": {
     ".": "./src/index.ts",
     "./react": "./src/react.ts",
+    "./mantine": "./src/mantine.tsx",
     "./src/*": "./src/*"
   },
   "files": [
     "src"
   ],
   "peerDependencies": {
-    "react": ">=18"
+    "react": ">=18",
+    "@mantine/core": ">=8"
   },
   "peerDependenciesMeta": {
     "react": {
+      "optional": true
+    },
+    "@mantine/core": {
       "optional": true
     }
   },
@@ -24,6 +29,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "devDependencies": {
+    "@mantine/core": "^9.6.0",
     "@types/react": "^19.0.0",
     "react": "^19.0.0"
   }

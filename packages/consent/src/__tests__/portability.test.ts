@@ -5,9 +5,9 @@ import { describe, expect, it } from 'vitest'
  * The core has to run wherever a page does, and nothing in a Node test run
  * fails when somebody adds an import that breaks that. So it is asserted.
  *
- * `react.ts` is exempt: it is the declared React entry point, it is not
- * reachable from `./index`, and React is an optional peer precisely so an app
- * without it can still use the model.
+ * `react.ts` and `mantine.tsx` are exempt: they are the declared React and
+ * Mantine entry points, neither is reachable from `./index`, and both peers are
+ * optional precisely so an app with neither can still use the model.
  */
 const CORE = ['types.ts', 'storage.ts', 'consent.ts', 'hash.ts', 'copy.ts', 'index.ts'] as const
 
@@ -30,6 +30,18 @@ describe('the core runs anywhere a page does', () => {
     // Importing the model must not drag React in behind it, or an app without
     // React cannot read a stored decision.
     expect(source('index.ts')).not.toContain('react')
+  })
+
+  it('index does not pull in the Mantine binding', () => {
+    // Same reasoning, and it matters more: kanu-web has no Mantine at all, and
+    // importing CONSENT_COPY must not ask it to install one.
+    expect(source('index.ts')).not.toContain('mantine')
+  })
+
+  it('the React binding stays free of Mantine', () => {
+    // kanu-web uses the hook with its own components. If the hook reached for
+    // Mantine, that would stop being possible.
+    expect(source('react.ts')).not.toContain('mantine')
   })
 
   it.each(CORE)('%s touches the DOM only through a passed-in handle', (file) => {

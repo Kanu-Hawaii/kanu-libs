@@ -22,7 +22,7 @@ import {
 } from './consent'
 import { consumeConsentHash } from './hash'
 import { defaultStore, type ConsentStore } from './storage'
-import type { ConsentPreferences } from './types'
+import type { ConsentPreferences, StoredConsent } from './types'
 
 export interface UseCookieConsentOptions {
   /**
@@ -49,11 +49,25 @@ export function useCookieConsent(options: UseCookieConsentOptions = {}) {
   storeRef.current ??= options.store ?? defaultStore()
   const store: ConsentStore = storeRef.current
 
-  const [stored, setStored] = useState(() => readConsent(store))
+  /**
+   * Deliberately null on the first render, on the server AND in the browser,
+   * rather than seeded from storage.
+   *
+   * Four of the five consuming apps are server-rendered. A first client render
+   * that read the cookie would disagree with the HTML the server sent — the
+   * server has no cookie access here and would always say "no decision yet" —
+   * and React would either warn about the mismatch or, worse, keep the server's
+   * markup and show a banner to somebody who already answered. Reading in an
+   * effect makes both renders agree by construction.
+   */
+  const [stored, setStored] = useState<StoredConsent | null>(null)
+  const [hydrated, setHydrated] = useState(false)
   const [dialogOpen, setDialogOpen] = useState(false)
 
   const preferences = preferencesOf(stored)
-  const showBanner = needsDecision(stored) && !dialogOpen
+  // Never before hydration: a banner in server HTML is a banner shown to
+  // somebody whose stored answer has not been read yet.
+  const showBanner = hydrated && needsDecision(stored) && !dialogOpen
 
   const openPreferences = useCallback(() => setDialogOpen(true), [])
   const closePreferences = useCallback(() => setDialogOpen(false), [])
@@ -65,10 +79,13 @@ export function useCookieConsent(options: UseCookieConsentOptions = {}) {
   const withdrawRef = useRef(onWithdraw)
   withdrawRef.current = onWithdraw
 
-  // Whatever was already agreed to starts on load, without waiting for an
-  // interaction: a returning visitor should not have to accept again.
+  // Read the decision and start whatever it allows, once, after mount.
+  // A returning visitor should not have to accept again for analytics to run.
   useEffect(() => {
-    if (stored) applyRef.current?.(stored.preferences)
+    const existing = readConsent(store)
+    setStored(existing)
+    setHydrated(true)
+    if (existing) applyRef.current?.(existing.preferences)
     // Once, on mount. Later changes go through `save`.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -102,6 +119,8 @@ export function useCookieConsent(options: UseCookieConsentOptions = {}) {
   return {
     preferences,
     showBanner,
+    /** False until the stored decision has been read. Server renders stay inert. */
+    hydrated,
     dialogOpen,
     openPreferences,
     closePreferences,

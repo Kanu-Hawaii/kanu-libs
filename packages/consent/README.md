@@ -40,15 +40,43 @@ and bump `CONSENT_VERSION` when an existing category changes meaning.
 
 ## What this package does not do
 
-**It renders nothing.** kanu-needs is Mantine and kanu-web has its own brand
-tokens, so a shared component would fit neither. What is shared is the model,
-the storage, the hash behaviour and the *words* (`CONSENT_COPY`), which is the
-part a visitor notices and a lawyer reviews.
-
 **It knows no vendor's name.** `useCookieConsent` takes `onApply` and
-`onWithdraw` callbacks. Each app decides what "analytics on" means for it.
+`onWithdraw` callbacks. Each app decides what "analytics on" means for it. A
+package that imported GTM would be unusable in half the places it has to go.
+
+## Three entry points
+
+| Entry | For | Peers |
+|---|---|---|
+| `@kanu/consent` | The model: categories, storage, migration, hash, copy | none |
+| `@kanu/consent/react` | `useCookieConsent`, for an app rendering its own UI | react |
+| `@kanu/consent/mantine` | `<CookieConsent />` and `<CookiePreferencesLink />`, ready to mount | react, @mantine/core |
+
+The first cut of this package shipped no components at all, reasoning that
+kanu-needs is Mantine and kanu-web has its own brand tokens so anything shared
+would fit neither. That was true of two apps and wrong about five: **needs,
+pledge, map and docs are all Mantine**, and only kanu-web is not. Four copies of
+one banner is four places for the wording, the button order and the hydration
+handling to drift, so the Mantine one is shared and kanu-web builds its own from
+the same hook and the same `CONSENT_COPY`.
+
+Both optional peers are behind their own entry point, and `portability.test.ts`
+asserts that importing the model drags in neither.
 
 ## Using it
+
+A Mantine app mounts the component and is done:
+
+```tsx
+import { CookieConsent } from '@kanu/consent/mantine'
+
+<CookieConsent
+  onApply={(prefs) => { if (prefs.analytics) startAnalytics() }}
+  onWithdraw={stopAnalytics}
+/>
+```
+
+An app rendering its own UI takes the hook:
 
 ```ts
 import { CONSENT_COPY } from '@kanu/consent'
@@ -60,6 +88,14 @@ const { preferences, showBanner, dialogOpen, save, acceptAll, rejectAll,
   onWithdraw: () => stopAnalytics(),
 })
 ```
+
+### Server rendering
+
+Four of the five consuming apps are server-rendered, so the hook reads storage
+in an effect rather than seeding state from it, and `showBanner` stays false
+until `hydrated` is true. A first client render that read the cookie would
+disagree with HTML the server produced without one, and the visible form of that
+bug is a banner shown to somebody who already answered.
 
 `#cookie` on any page address reopens the dialog, on first load and on a later
 hash change, clearing the fragment afterwards. `#cookies` and
