@@ -102,7 +102,7 @@ hash change, clearing the fragment afterwards. `#cookies` and
 `#cookie-preferences` work too. Point the footer link at `#cookie` so there is
 one path in rather than a link and a button that can drift.
 
-### Consumers must dedupe React
+### Consumers must dedupe React and Mantine
 
 This package arrives through the kanu-libs **submodule**, so it sits outside the
 consuming app's workspace and resolves its own imports from kanu-libs'
@@ -114,13 +114,18 @@ loud:
 2. Once it resolves, it loads *kanu-libs'* copy of React — a second instance,
    which turns every hook in here into "invalid hook call" at runtime.
 
+The same applies to Mantine for `./mantine`, and there it is worse: a second
+copy also misses the app's `MantineProvider`, so the banner renders unstyled and
+outside the theme.
+
 Vite:
 
 ```ts
-resolve: { dedupe: ['react', 'react-dom'] }
+resolve: { dedupe: ['react', 'react-dom', '@mantine/core', '@mantine/hooks'] }
 ```
 
-Next.js dedupes workspace React on its own; check it if a hook misbehaves.
+Next.js dedupes workspace packages on its own in most setups; check it if a hook
+misbehaves or the banner comes out unthemed.
 
 ### Withdrawal usually means a reload
 
