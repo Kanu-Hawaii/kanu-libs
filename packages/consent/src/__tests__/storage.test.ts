@@ -9,15 +9,19 @@ import {
 } from '../storage'
 
 /** Just enough of `document` to exercise the cookie accessor pair. */
-function fakeDocument() {
+function fakeDocument(): Document & { written: string[] } {
   let jar = ''
+  // `written` is closed over rather than read off `this`: inside an object
+  // literal's setter `this` widens to `{}` under strict settings, and a
+  // consuming app that typechecks this file then fails on it.
+  const written: string[] = []
   return {
-    written: [] as string[],
+    written,
     get cookie() {
       return jar
     },
     set cookie(value: string) {
-      this.written.push(value)
+      written.push(value)
       const pair = value.split(';')[0]!
       jar = jar ? `${jar}; ${pair}` : pair
     },
