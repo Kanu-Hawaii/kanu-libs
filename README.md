@@ -7,6 +7,7 @@ and [kanu-pledge](https://github.com/Kanu-Hawaii/kanu-pledge).
 | Package | What it is |
 |---|---|
 | [`@kanu/resend-contacts`](packages/resend-contacts) | Adding a consenting person to Resend's contact book. No dependencies, runs on Node and Deno |
+| [`@kanu/consent`](packages/consent) | Cookie consent by category, and the cookie that carries one answer across every kanuhawaii.org subdomain. Model only: each app renders it with its own components |
 
 ```bash
 pnpm install
