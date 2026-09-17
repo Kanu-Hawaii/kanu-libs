@@ -82,14 +82,27 @@ export const PROPERTIES: Record<PropertyName, Record<KanuEnvironment, string>> =
  * is no WordPress in the picture at all, so the alias resolves to the app and
  * a developer clicking "Pledge" gets the thing they are working on.
  *
- * WHAT IS DELIBERATELY NOT HERE: `https://www.kanuhawaii.org` and
- * `https://kanuhawaii.org`. The WordPress site is still live and still owns
- * pages this project has not replaced — the volunteerism report PDFs among them
- * — so rewriting its origin wholesale would break working links in order to fix
- * some of them. Those move one at a time, as content edits, when the page they
- * point at exists here. The same goes for `donate.kanuhawaii.org`, which wants
- * a relative `/donate` on the marketing site rather than a fifth property.
+ * WHAT IS DELIBERATELY NOT HERE: `donate.kanuhawaii.org`, the GiveWP install
+ * that /donate replaced. That one wants a relative link on the marketing site
+ * rather than a fifth property, and rewriting its origin would point a test
+ * donation at the real Stripe account — which has already happened once.
  */
 export const ALIASES: ReadonlyArray<readonly [string, PropertyName]> = [
   ['https://pledge.kanuhawaii.org', 'pledge'],
+  /*
+   * The WordPress site, which is the marketing site until it is retired.
+   *
+   * kanu-pledge's ported navigation has FORTY-NINE of these -- /volunteer,
+   * /students, /visitors, /partnerships -- because that is where those pages
+   * live today. On a local build every one of them left the machine and landed
+   * on the live site, which is what an alias is for.
+   *
+   * Like the pledge alias, production is untouched: there, www.kanuhawaii.org
+   * IS the page being linked to. Only local and staging resolve it to the new
+   * marketing site, where the honest outcome is either the replacement page or
+   * a 404 telling you it has not been built yet. Silently reading the live site
+   * while developing is the worse of the two.
+   */
+  ['https://www.kanuhawaii.org', 'www'],
+  ['https://kanuhawaii.org', 'www'],
 ]

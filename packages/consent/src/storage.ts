@@ -50,6 +50,21 @@ export function cookieDomainFor(hostname: string): string | null {
   if (host === 'kanuhawaii.org' || host.endsWith('.kanuhawaii.org')) {
     return '.kanuhawaii.org'
   }
+  /*
+   * Local development is five apps on five subdomains of one name, exactly as
+   * production is -- www, needs, map, pledge and docs under
+   * `.kanuhawaii.localhost` -- so the decision has to travel the same way there
+   * or the banner asks again on every app. It did, and that is how this was
+   * found: accept on the pledge, open the docs, get asked again.
+   *
+   * A browser treats `.localhost` as an ordinary suffix for cookies, so a
+   * domain cookie on `.kanuhawaii.localhost` is shared across those subdomains
+   * and reaches nothing else. It is not a public suffix, and no other project
+   * on this machine can be under that name.
+   */
+  if (host === 'kanuhawaii.localhost' || host.endsWith('.kanuhawaii.localhost')) {
+    return '.kanuhawaii.localhost'
+  }
   return null
 }
 

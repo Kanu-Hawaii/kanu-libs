@@ -41,10 +41,24 @@ describe('cookieDomainFor', () => {
     }
   })
 
+  it('shares the decision across the local apps too, which are five subdomains of one name', () => {
+    /* This asserted `null` until somebody accepted on the pledge, opened the
+       docs, and was asked again. Local development has the same shape as
+       production -- www, needs, map, pledge and docs under one name -- so the
+       cookie has to travel the same way. `.localhost` is an ordinary suffix to
+       a browser and is not a public suffix. */
+    for (const host of [
+      'kanuhawaii.localhost',
+      'needs.kanuhawaii.localhost',
+      'my-branch.www.kanuhawaii.localhost',
+    ]) {
+      expect(cookieDomainFor(host)).toBe('.kanuhawaii.localhost')
+    }
+  })
+
   it('refuses anywhere else, so no cookie lands on a domain we do not own', () => {
     for (const host of [
       'localhost',
-      'needs.kanuhawaii.localhost',
       'kanu-needs.vercel.app',
       'gohawaii.com',
       'notkanuhawaii.org',

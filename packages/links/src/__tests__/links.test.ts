@@ -81,13 +81,8 @@ describe('rewriteHref', () => {
     )
   })
 
-  it('leaves the WordPress site, relative links and third parties alone', () => {
-    for (const url of [
-      'https://www.kanuhawaii.org/volunteerism-report.pdf',
-      'https://kanuhawaii.org/needs',
-      '/donate',
-      'https://example.org/needs.kanuhawaii.org',
-    ]) {
+  it('leaves relative links and third parties alone', () => {
+    for (const url of ['/donate', 'https://example.org/needs.kanuhawaii.org']) {
       expect(rewriteHref(url, 'local')).toBe(url)
     }
   })
@@ -98,6 +93,23 @@ describe('rewriteHref', () => {
         needs: 'https://needs-worktree.kanuhawaii.localhost/',
       }),
     ).toBe('https://needs-worktree.kanuhawaii.localhost/join')
+  })
+})
+
+describe('the WordPress alias', () => {
+  /* kanu-pledge's ported navigation is forty-nine links at this origin. */
+  it('resolves to the marketing site locally and on staging', () => {
+    expect(rewriteHref('https://www.kanuhawaii.org/volunteer', 'local')).toBe(
+      'https://www.kanuhawaii.localhost/volunteer',
+    )
+    expect(rewriteHref('https://kanuhawaii.org/students', 'staging')).toBe(
+      'https://stg.www.kanuhawaii.org/students',
+    )
+  })
+
+  it('is left alone in production, where it is still the page being linked to', () => {
+    const url = 'https://www.kanuhawaii.org/volunteerism-report.pdf'
+    expect(rewriteHref(url, 'production')).toBe(url)
   })
 })
 
