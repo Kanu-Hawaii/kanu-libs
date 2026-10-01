@@ -77,6 +77,7 @@ export function KanuLinks({
      being installed hundreds of times. */
   const overridesKey = JSON.stringify(overrides ?? {})
   const attributesKey = JSON.stringify(attributes)
+  const aliasesKey = JSON.stringify(rewriteAliasesInProduction ?? false)
 
   const environment = useDetectedEnvironment(env)
 
@@ -84,10 +85,10 @@ export function KanuLinks({
     () =>
       environment
         ? mappingsFor(environment, JSON.parse(overridesKey) as Overrides, {
-            rewriteAliasesInProduction,
+            rewriteAliasesInProduction: JSON.parse(aliasesKey) as RewriteOptions['rewriteAliasesInProduction'],
           })
         : [],
-    [environment, overridesKey, rewriteAliasesInProduction],
+    [environment, overridesKey, aliasesKey],
   )
 
   const specs = useMemo(

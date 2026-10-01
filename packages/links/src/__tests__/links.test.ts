@@ -136,6 +136,16 @@ describe('the pledge alias', () => {
       }),
     ).toBe('https://pledge2.kanuhawaii.org/sign')
   })
+
+  /* The marketing site's case: the pledge moves, the WordPress PDFs do not. */
+  it('moves only the named properties when the app passes a list', () => {
+    const options = { rewriteAliasesInProduction: ['pledge'] as const }
+    expect(rewriteHref('https://pledge.kanuhawaii.org/widget/kanu-pledge.js', 'production', {}, options)).toBe(
+      'https://pledge2.kanuhawaii.org/widget/kanu-pledge.js',
+    )
+    const pdf = 'https://www.kanuhawaii.org/wp-content/uploads/volunteerism-report.pdf'
+    expect(rewriteHref(pdf, 'production', {}, options)).toBe(pdf)
+  })
 })
 
 describe('production', () => {

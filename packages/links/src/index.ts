@@ -27,12 +27,23 @@ export type Overrides = Partial<Record<PropertyName, string | undefined>>
 
 export type RewriteOptions = {
   /**
-   * Rewrite the aliases in production as well. Off by default: the one alias
-   * today is `pledge.kanuhawaii.org`, which still serves the live WordPress
-   * page. See ALIASES.
+   * Rewrite the aliases in production as well. Off by default: both aliases
+   * still serve live WordPress pages. See ALIASES.
+   *
+   * `true` moves every alias; a list moves only the aliases of the properties
+   * it names. The list exists because the two answers differ by app: kanu-pledge
+   * wants all of them, but on the marketing site `www.kanuhawaii.org` is where
+   * the WordPress-only files still live (the volunteerism report PDFs), so it
+   * wants `['pledge']` and must leave `www` alone.
    */
-  rewriteAliasesInProduction?: boolean
+  rewriteAliasesInProduction?: boolean | readonly PropertyName[]
 }
+
+const aliasMoves = (
+  env: KanuEnvironment,
+  name: PropertyName,
+  option: RewriteOptions['rewriteAliasesInProduction'],
+) => env !== 'production' || option === true || (Array.isArray(option) && option.includes(name))
 
 const trimOrigin = (value: string) => value.trim().replace(/\/+$/, '')
 
@@ -106,10 +117,9 @@ export const mappingsFor = (
     }
   }
 
-  if (env !== 'production' || options.rewriteAliasesInProduction) {
-    for (const [from, name] of ALIASES) {
-      if (from !== targets[name]) pairs.push([from, targets[name]] as const)
-    }
+  for (const [from, name] of ALIASES) {
+    if (!aliasMoves(env, name, options.rewriteAliasesInProduction)) continue
+    if (from !== targets[name]) pairs.push([from, targets[name]] as const)
   }
 
   return pairs.sort((a, b) => b[0].length - a[0].length)

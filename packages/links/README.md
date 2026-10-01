@@ -103,3 +103,9 @@ staging the alias resolves to the app, which is what a developer wants; in
 production it is left alone unless an app passes
 `rewriteAliasesInProduction`, because moving live traffic off a live page is
 Kanu's decision rather than a link library's.
+
+`true` moves every alias; a list such as `['pledge']` moves only the named
+properties' aliases. As of 2026-10-01 kanu-pledge passes `true` (its chrome
+should land on new.kanuhawaii.org, not WordPress) and kanu-web passes
+`['pledge']` (its `www.kanuhawaii.org` links include WordPress-only files that
+must keep working).
