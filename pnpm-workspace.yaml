@@ -1,2 +1,13 @@
 packages:
   - 'packages/*'
+
+# pnpm 11 refuses to run a dependency's install script unless it is named here,
+# and an ignored build is an ERROR (ERR_PNPM_IGNORED_BUILDS), not a warning.
+# esbuild (via vitest) fetches its platform binary in postinstall. Both keys on
+# purpose: `allowBuilds` is pnpm 11's spelling, `onlyBuiltDependencies` the
+# older one -- same pattern as kanu-map.
+allowBuilds:
+  esbuild: true
+
+onlyBuiltDependencies:
+  - esbuild
