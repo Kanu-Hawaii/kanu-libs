@@ -16,6 +16,13 @@ pnpm check      # typecheck + test
 pnpm build
 ```
 
+## Shipping
+
+Every live Kanu site builds from this repository, pinned as a submodule. A change goes on a branch
+and through a pull request into `main`; once merged, each app that uses the package gets its own
+pull request moving its pin to the merged commit. A human merges all of them. The full rule is in
+kanu-root `CLAUDE.md` under "Shipping".
+
 ## The rule that shapes everything here
 
 **A package in this repo has to run in three places that disagree about what a runtime is**: a Next
