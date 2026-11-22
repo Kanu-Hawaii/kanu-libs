@@ -76,8 +76,23 @@ export function CookieConsent({
           p="md"
           role="region"
           aria-label="Cookie choices"
+          data-kanu-consent-banner=""
+          /*
+           * Its own colours, not the page's. kanu-map sets white text on its dark
+           * shell, the banner is a white panel, and the sentence inherited the
+           * white: buttons and a link, with nothing saying what they were for.
+           */
+          bg="white"
+          c="#1c2557"
           style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1000, borderRadius: 0 }}
         >
+          {/*
+           * The "?" help button is a third-party embed with a z-index of 9999999.
+           * On a phone it sat on top of Accept and of the Privacy Policy link.
+           * Hidden only while the banner is on screen: this rule leaves the page
+           * with the banner, so the button is back the moment a visitor answers.
+           */}
+          <style>{'[class*="zite-embed-popup-button"]{display:none!important}'}</style>
           <Group justify="center" gap="md" wrap="wrap">
             <Text size="sm" style={textStyle}>
               {CONSENT_COPY.bannerBody}{' '}
