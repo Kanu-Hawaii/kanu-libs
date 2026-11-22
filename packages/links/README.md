@@ -35,7 +35,7 @@ way to notice is to look at the address bar.
 |---|---|
 | `www.kanuhawaii.localhost` | `https://needs.kanuhawaii.localhost/join` |
 | `stg.www.kanuhawaii.org` | `https://stg.needs.kanuhawaii.org/join` |
-| `new.kanuhawaii.org` | unchanged |
+| `www.kanuhawaii.org` | unchanged |
 | a PR preview on `*.vercel.app` | unchanged — see below |
 
 The table of properties and their hostnames is
@@ -97,15 +97,12 @@ site is still live and still owns pages this project has not replaced, so
 moving its origin wholesale would break working links in order to fix some of
 them. Those move one at a time, as content edits.
 
-**`pledge.kanuhawaii.org` is an alias, not a property.** It serves WordPress in
-production (verified 2026-09-17) while the app is on `pledge2`. Locally and on
-staging the alias resolves to the app, which is what a developer wants; in
-production it is left alone unless an app passes
-`rewriteAliasesInProduction`, because moving live traffic off a live page is
-Kanu's decision rather than a link library's.
+**The aliases are the pre-launch hostnames.** Until 2026-11-22 the marketing
+site answered at `new.kanuhawaii.org` and the pledge at `pledge2.kanuhawaii.org`,
+because WordPress held `www.` and `pledge.`. Those two are now aliases of the
+real names. Locally and on staging an alias resolves to the app; in production
+it is left alone unless an app passes `rewriteAliasesInProduction`, and both
+old hostnames keep redirecting, so an unrewritten link still arrives.
 
 `true` moves every alias; a list such as `['pledge']` moves only the named
-properties' aliases. As of 2026-10-01 kanu-pledge passes `true` (its chrome
-should land on new.kanuhawaii.org, not WordPress) and kanu-web passes
-`['pledge']` (its `www.kanuhawaii.org` links include WordPress-only files that
-must keep working).
+properties' aliases. kanu-pledge passes `true` and kanu-web passes `['pledge']`.

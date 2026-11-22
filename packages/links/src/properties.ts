@@ -11,11 +11,10 @@
  * the link works, it just goes to the wrong copy.
  *
  * WHY EVERY ENVIRONMENT'S HOSTNAME IS LISTED, rather than deriving them from a
- * pattern: there is no pattern. The marketing site is `new` in production,
- * `stg.www` in staging and `www` locally — it is mid-migration off WordPress,
- * which still holds `www.kanuhawaii.org` — and `pledge` is `pledge2` in
- * production for the same kind of reason. A rule that covered four of the five
- * would be a rule somebody trusts and then debugs.
+ * pattern: there is no promise of one. Until 2026-11-22 the marketing site was
+ * `new` and the pledge `pledge2` in production, because WordPress held the real
+ * names. A rule that covered four of the five would be a rule somebody trusts
+ * and then debugs.
  *
  * MATCHING IS DONE AGAINST ALL THREE COLUMNS, not just production. Content
  * mostly stores production URLs, but a page seeded from a staging database or a
@@ -34,9 +33,9 @@ export type KanuEnvironment = 'production' | 'staging' | 'local'
 export const ENVIRONMENTS: readonly KanuEnvironment[] = ['production', 'staging', 'local']
 
 export const PROPERTIES: Record<PropertyName, Record<KanuEnvironment, string>> = {
-  /** The marketing site. `new` until the WordPress install at www is retired. */
+  /** The marketing site. It was `new.kanuhawaii.org` until it took over www on 2026-11-22. */
   www: {
-    production: 'https://new.kanuhawaii.org',
+    production: 'https://www.kanuhawaii.org',
     staging: 'https://stg.www.kanuhawaii.org',
     local: 'https://www.kanuhawaii.localhost',
   },
@@ -51,15 +50,9 @@ export const PROPERTIES: Record<PropertyName, Record<KanuEnvironment, string>> =
     staging: 'https://stg.map.kanuhawaii.org',
     local: 'https://map.kanuhawaii.localhost',
   },
-  /**
-   * The pledge. `pledge2` in production because `pledge.kanuhawaii.org` is
-   * still the WordPress page this app replaces — which is exactly why it is
-   * listed as an alias below rather than ignored: content all over the other
-   * four apps says `pledge.kanuhawaii.org`, and today those links land on the
-   * old site.
-   */
+  /** The pledge. It was `pledge2.kanuhawaii.org` while WordPress still held `pledge.` (until 2026-11-22). */
   pledge: {
-    production: 'https://pledge2.kanuhawaii.org',
+    production: 'https://pledge.kanuhawaii.org',
     staging: 'https://stg.pledge.kanuhawaii.org',
     local: 'https://pledge.kanuhawaii.localhost',
   },
@@ -74,13 +67,11 @@ export const PROPERTIES: Record<PropertyName, Record<KanuEnvironment, string>> =
  * Origins that mean a property but are not one of its three hostnames.
  *
  * An alias is matched like any other origin, but IN PRODUCTION IT IS LEFT ALONE
- * UNLESS THE APP OPTS IN. Verified 2026-09-17: `pledge.kanuhawaii.org` serves
- * WordPress (`wp-content`, the old Kanu Hawaii title) and `pledge2` serves the
- * Next app. So rewriting the alias in production would move traffic off a page
- * that is still live, which is a content decision for Kanu rather than
- * something a link library should do on its own. Locally and on staging there
- * is no WordPress in the picture at all, so the alias resolves to the app and
- * a developer clicking "Pledge" gets the thing they are working on.
+ * UNLESS THE APP OPTS IN. Today's aliases are the pre-launch hostnames, `new.`
+ * and `pledge2.`, which the apps answered at while WordPress held `www.` and
+ * `pledge.`. Both keep redirecting to the real name, so a link that is not
+ * rewritten still arrives; the opt-in exists because rewriting somebody's
+ * stored URL in production is the app's decision, not a link library's.
  *
  * WHAT IS DELIBERATELY NOT HERE: `donate.kanuhawaii.org`, the GiveWP install
  * that /donate replaced. That one wants a relative link on the marketing site
@@ -88,21 +79,12 @@ export const PROPERTIES: Record<PropertyName, Record<KanuEnvironment, string>> =
  * donation at the real Stripe account — which has already happened once.
  */
 export const ALIASES: ReadonlyArray<readonly [string, PropertyName]> = [
-  ['https://pledge.kanuhawaii.org', 'pledge'],
+  ['https://pledge2.kanuhawaii.org', 'pledge'],
   /*
-   * The WordPress site, which is the marketing site until it is retired.
-   *
-   * kanu-pledge's ported navigation has FORTY-NINE of these -- /volunteer,
-   * /students, /visitors, /partnerships -- because that is where those pages
-   * live today. On a local build every one of them left the machine and landed
-   * on the live site, which is what an alias is for.
-   *
-   * Like the pledge alias, production is untouched: there, www.kanuhawaii.org
-   * IS the page being linked to. Only local and staging resolve it to the new
-   * marketing site, where the honest outcome is either the replacement page or
-   * a 404 telling you it has not been built yet. Silently reading the live site
-   * while developing is the worse of the two.
+   * `www.kanuhawaii.org` and `pledge.kanuhawaii.org` are no longer aliases:
+   * they are the production origins in PROPERTIES, which are matched in every
+   * environment anyway. The apex still redirects to www.
    */
-  ['https://www.kanuhawaii.org', 'www'],
+  ['https://new.kanuhawaii.org', 'www'],
   ['https://kanuhawaii.org', 'www'],
 ]

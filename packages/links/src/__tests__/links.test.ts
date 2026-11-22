@@ -113,38 +113,37 @@ describe('the WordPress alias', () => {
   })
 })
 
-describe('the pledge alias', () => {
-  it('reaches the app locally and on staging', () => {
-    expect(rewriteHref('https://pledge.kanuhawaii.org/sign', 'local')).toBe(
-      'https://pledge.kanuhawaii.localhost/sign',
-    )
-    expect(rewriteHref('https://pledge.kanuhawaii.org/sign', 'staging')).toBe(
-      'https://stg.pledge.kanuhawaii.org/sign',
-    )
+describe('the pre-launch hostnames', () => {
+  it('pledge and www are the production names, and reach the app locally and on staging', () => {
+    expect(rewriteHref('https://pledge.kanuhawaii.org/sign', 'production')).toBe('https://pledge.kanuhawaii.org/sign')
+    expect(rewriteHref('https://www.kanuhawaii.org/visitors', 'production')).toBe('https://www.kanuhawaii.org/visitors')
+    expect(rewriteHref('https://pledge.kanuhawaii.org/sign', 'local')).toBe('https://pledge.kanuhawaii.localhost/sign')
+    expect(rewriteHref('https://pledge.kanuhawaii.org/sign', 'staging')).toBe('https://stg.pledge.kanuhawaii.org/sign')
   })
 
-  it('is left alone in production, where it still serves the live WordPress page', () => {
-    expect(rewriteHref('https://pledge.kanuhawaii.org/sign', 'production')).toBe(
-      'https://pledge.kanuhawaii.org/sign',
-    )
+  it('pledge2 and new still reach the app locally and on staging', () => {
+    expect(rewriteHref('https://pledge2.kanuhawaii.org/sign', 'local')).toBe('https://pledge.kanuhawaii.localhost/sign')
+    expect(rewriteHref('https://new.kanuhawaii.org/visitors', 'staging')).toBe('https://stg.www.kanuhawaii.org/visitors')
   })
 
-  it('moves in production only when the app asks for it', () => {
-    expect(
-      rewriteHref('https://pledge.kanuhawaii.org/sign', 'production', {}, {
-        rewriteAliasesInProduction: true,
-      }),
-    ).toBe('https://pledge2.kanuhawaii.org/sign')
+  it('are left alone in production unless the app asks, because both still redirect', () => {
+    expect(rewriteHref('https://pledge2.kanuhawaii.org/sign', 'production')).toBe('https://pledge2.kanuhawaii.org/sign')
+    expect(rewriteHref('https://new.kanuhawaii.org/visitors', 'production')).toBe('https://new.kanuhawaii.org/visitors')
   })
 
-  /* The marketing site's case: the pledge moves, the WordPress PDFs do not. */
-  it('moves only the named properties when the app passes a list', () => {
+  it('move to the real names in production when the app asks for it', () => {
+    const all = { rewriteAliasesInProduction: true }
+    expect(rewriteHref('https://pledge2.kanuhawaii.org/sign', 'production', {}, all)).toBe('https://pledge.kanuhawaii.org/sign')
+    expect(rewriteHref('https://new.kanuhawaii.org/visitors', 'production', {}, all)).toBe('https://www.kanuhawaii.org/visitors')
+  })
+
+  it('move only the named properties when the app passes a list', () => {
     const options = { rewriteAliasesInProduction: ['pledge'] as const }
-    expect(rewriteHref('https://pledge.kanuhawaii.org/widget/kanu-pledge.js', 'production', {}, options)).toBe(
-      'https://pledge2.kanuhawaii.org/widget/kanu-pledge.js',
+    expect(rewriteHref('https://pledge2.kanuhawaii.org/widget/kanu-pledge.js', 'production', {}, options)).toBe(
+      'https://pledge.kanuhawaii.org/widget/kanu-pledge.js',
     )
-    const pdf = 'https://www.kanuhawaii.org/wp-content/uploads/volunteerism-report.pdf'
-    expect(rewriteHref(pdf, 'production', {}, options)).toBe(pdf)
+    const stale = 'https://new.kanuhawaii.org/donate'
+    expect(rewriteHref(stale, 'production', {}, options)).toBe(stale)
   })
 })
 
