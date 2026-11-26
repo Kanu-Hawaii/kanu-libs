@@ -1,0 +1,17 @@
+{
+  "name": "@kanu/analytics",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "One set of named analytics events for every Kanu Hawaii site, sent to PostHog after consent. No dependencies: PostHog's own script is loaded at runtime.",
+  "exports": {
+    ".": "./src/index.ts",
+    "./src/*": "./src/*"
+  },
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  }
+}

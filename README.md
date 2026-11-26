@@ -7,6 +7,7 @@ and [kanu-pledge](https://github.com/Kanu-Hawaii/kanu-pledge).
 | Package | What it is |
 |---|---|
 | [`@kanu/resend-contacts`](packages/resend-contacts) | Adding a consenting person to Resend's contact book. No dependencies, runs on Node and Deno |
+| [`@kanu/analytics`](packages/analytics) | The event catalog every site shares, and PostHog started after consent. No dependencies: PostHog's script loads at runtime |
 | [`@kanu/consent`](packages/consent) | Cookie consent by category, and the cookie that carries one answer across every kanuhawaii.org subdomain. Model only: each app renders it with its own components |
 | [`@kanu/links`](packages/links) | Cross-property links that point at the copy of the world you are in. One mount per app rewrites every cross-app link to local, staging or production |
 
